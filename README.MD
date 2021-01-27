@@ -184,15 +184,15 @@ Project Link: [https://github.com/tampajohn/goflake](https://github.com/tampajoh
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/tampajohn/repo.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/tampajohn/goflake.svg?style=for-the-badge
 [contributors-url]: https://github.com/tampajohn/repo/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/tampajohn/repo.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/tampajohn/goflake.svg?style=for-the-badge
 [forks-url]: https://github.com/tampajohn/repo/network/members
-[stars-shield]: https://img.shields.io/github/stars/tampajohn/repo.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/tampajohn/goflake.svg?style=for-the-badge
 [stars-url]: https://github.com/tampajohn/repo/stargazers
-[issues-shield]: https://img.shields.io/github/issues/tampajohn/repo.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/tampajohn/goflake.svg?style=for-the-badge
 [issues-url]: https://github.com/tampajohn/repo/issues
-[license-shield]: https://img.shields.io/github/license/tampajohn/repo.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/tampajohn/goflake.svg?style=for-the-badge
 [license-url]: https://github.com/tampajohn/repo/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/tampajohn
