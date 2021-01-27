@@ -184,5 +184,5 @@ Project Link: [https://github.com/tampajohn/goflake](https://github.com/tampajoh
 [license-shield]: https://img.shields.io/github/license/tampajohn/goflake.svg?style=for-the-badge&test
 [license-url]: https://github.com/tampajohn/goflake/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/tampajohn
+[linkedin-url]: https://linkedin.com/in/johnquinceyadams
 [product-screenshot]: https://github.com/tampajohn/goflake/blob/master/assets/images/screenshot.png
