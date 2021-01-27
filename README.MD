@@ -105,10 +105,7 @@ To get a local copy up and running follow these simple steps.
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+* [Go >= 1.15](https://golang.org/doc/install)
 
 ### Installation
 
@@ -116,21 +113,22 @@ This is an example of how to list things you need to use the software and how to
    ```sh
    git clone https://github.com/tampajohn/goflake.git
    ```
-2. Install NPM packages
+2. Go into the repo
    ```sh
-   npm install
+   cd goflake
    ```
-
-
+3. Install the go packages
+   ```sh
+   go get
+   ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-
+* You can run the CLI directly with:
+  ```sh
+  go run ./cmd/cli/main.go
+  ```
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -162,22 +160,16 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@tampajohn](https://twitter.com/tampajohn) - john@rungo.io
+John Adams - [@tampajohn](https://twitter.com/tampajohn) - john@rungo.io
 
 Project Link: [https://github.com/tampajohn/goflake](https://github.com/tampajohn/goflake)
 
 
 
 <!-- ACKNOWLEDGEMENTS -->
-## Acknowledgements
+<!-- ## Acknowledgements
 
-* []()
-* []()
-* []()
-
-
-
-
+* []() -->
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
