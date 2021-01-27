@@ -1,14 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/buger/goterm"
 	"github.com/manifoldco/promptui"
 	"github.com/tampajohn/goflake/pkg/common"
 	"github.com/tampajohn/goflake/pkg/externalfunction"
 )
 
 type topOption int
+
+const banner = `
+ _______  _______  _______  ___      _______  ___   _  _______ 
+|       ||       ||       ||   |    |   _   ||   | | ||       |
+|    ___||   _   ||    ___||   |    |  |_|  ||   |_| ||    ___|
+|   | __ |  | |  ||   |___ |   |    |       ||      _||   |___ 
+|   ||  ||  |_|  ||    ___||   |___ |       ||     |_ |    ___|
+|   |_| ||       ||   |    |       ||   _   ||    _  ||   |___ 
+|_______||_______||___|    |_______||__| |__||___| |_||_______|
+===============================================================
+---------------------------- beta -----------------------------
+
+
+`
 
 const (
 	// ExternalFunction allows the creation of a Snowflake Function that calls a Cloud Proxy endpoint
@@ -28,6 +44,12 @@ func (o topOption) String() string {
 }
 
 func main() {
+	goterm.Clear()
+	goterm.Flush()
+	goterm.MoveCursor(1, 1)
+	goterm.Flush()
+	fmt.Print(banner)
+
 	prompt := promptui.Select{
 		Label: "What do you want make?",
 		Items: []topOption{ExternalFunction, SSOIntegration},

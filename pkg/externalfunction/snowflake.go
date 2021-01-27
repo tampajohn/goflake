@@ -30,9 +30,9 @@ func NewSnowflakeConfig(awsCfg *AWSConfig) *SnowflakeConfig {
 		cfg.sfPass = common.EnvOrString("SNOWFLAKE_PASS", true)
 	} else {
 		// Just get the creds from the user
-		cfg.sfAccount = common.PromptString("SNOWFLAKE_ACCOUNT", false)
-		cfg.sfUser = common.PromptString("SNOWFLAKE_USER", false)
-		cfg.sfPass = common.PromptString("SNOWFLAKE_PASS", true)
+		cfg.sfAccount = common.PromptString("SNOWFLAKE_ACCOUNT", false, "")
+		cfg.sfUser = common.PromptString("SNOWFLAKE_USER", false, "")
+		cfg.sfPass = common.PromptString("SNOWFLAKE_PASS", true, "")
 	}
 
 	dsn, err := sf.DSN(&sf.Config{
@@ -53,11 +53,12 @@ func NewSnowflakeConfig(awsCfg *AWSConfig) *SnowflakeConfig {
 	sf.SetLogger(&logger)
 
 	var s string
-	err = cfg.executeSnowflakeQuery(fmt.Sprintf(`create or replace api integration jqa_test_api_integration
+	err = cfg.executeSnowflakeQuery(fmt.Sprintf(`create or replace api integration %s_api_integration
 	api_provider = aws_api_gateway
 	api_aws_role_arn = '%s'
 	api_allowed_prefixes = ('%s')
 	enabled = true;`,
+		cfg.extFuncName,
 		cfg.EnsureRole(cfg.Resources.gatewayRoleName, TrustDocument),
 		cfg.Resources.gatewayEndpoint), func(scan func(dest ...interface{}) error) error {
 		return scan(&s)
@@ -73,7 +74,7 @@ func NewSnowflakeConfig(awsCfg *AWSConfig) *SnowflakeConfig {
 		Value        string
 		Default      string
 	}
-	err = cfg.executeSnowflakeQuery(fmt.Sprintf(`describe integration %s;`, `jqa_test_api_integration`), func(scan func(dest ...interface{}) error) error {
+	err = cfg.executeSnowflakeQuery(fmt.Sprintf(`describe integration %s_api_integration;`, cfg.extFuncName), func(scan func(dest ...interface{}) error) error {
 		r := &describeResults{
 			Value:   "",
 			Default: "",

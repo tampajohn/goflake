@@ -1,7 +1,9 @@
 package externalfunction
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/tampajohn/goflake/pkg/common"
@@ -40,8 +42,20 @@ func Start() {
 	selected := provider(idx)
 	switch selected {
 	case AWS:
-		fn := common.PromptString("What would you like the externalFunc to be called?", false)
-		cfg, err := NewAWSConfig(fn)
+		funcSig := common.PromptStringWithValidator(
+			"What is the function's signature?",
+			false,
+			"external_func(n int, v varchar)",
+			func(s string) error {
+				if len(s) == 0 || strings.Index(s, "(") < 1 || !strings.HasSuffix(s, ")") {
+					return fmt.Errorf("'%s' is not a valid function signature.", s)
+				}
+				return nil
+			})
+		funcSig = strings.TrimSpace(funcSig)
+		fn := strings.Split(funcSig, "(")[0]
+
+		cfg, err := NewAWSConfig(fn, funcSig)
 		if err != nil {
 			log.Fatalf("Error encountered: %s\n", err)
 		}

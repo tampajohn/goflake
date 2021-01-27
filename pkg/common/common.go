@@ -42,18 +42,35 @@ func EnvOrString(envVariable string, mask bool) string {
 	}
 	goterm.Printf("No %s was found.\n", envVariable)
 	goterm.Flush()
-	return PromptString(envVariable, mask)
+	return PromptString(envVariable, mask, "")
 }
 
-func PromptString(question string, mask bool) string {
+func PromptString(question string, mask bool, defValue string) string {
 	prompt := promptui.Prompt{
-		Label: question,
+		Label:   question,
+		Default: defValue,
 		Validate: func(s string) error {
 			if len(s) > 0 {
 				return nil
 			}
 			return fmt.Errorf("Please provide an answer")
 		},
+	}
+	if mask {
+		prompt.Mask = '*'
+	}
+	result, err := prompt.Run()
+	if err != nil {
+		log.Fatalf("Prompt failed %v\n", err)
+	}
+	return result
+}
+
+func PromptStringWithValidator(question string, mask bool, defValue string, validator func(string) error) string {
+	prompt := promptui.Prompt{
+		Label:    question,
+		Default:  defValue,
+		Validate: validator,
 	}
 	if mask {
 		prompt.Mask = '*'

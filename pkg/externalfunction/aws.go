@@ -20,13 +20,14 @@ import (
 )
 
 type AWSConfig struct {
-	awsSession      *session.Session
-	awsAccount      string
-	accessKeyID     string
-	secretAccessKey string
-	region          string
-	Resources       *AWSResources
-	extFuncName     string
+	awsSession       *session.Session
+	awsAccount       string
+	accessKeyID      string
+	secretAccessKey  string
+	region           string
+	Resources        *AWSResources
+	extFuncName      string
+	extFuncSignature string
 }
 
 type AWSResources struct {
@@ -120,8 +121,10 @@ const (
 	  `
 )
 
-func NewAWSConfig(extFuncName string) (*AWSConfig, error) {
+func NewAWSConfig(extFuncName string, extFuncSignature string) (*AWSConfig, error) {
 	cfg := &AWSConfig{Resources: &AWSResources{}}
+	cfg.extFuncName = extFuncName
+	cfg.extFuncSignature = extFuncSignature
 
 	if common.AskYesNo("Would you like to us to attempt to use your AWS_ACCESS_KEY_ID from your environment?") {
 		// Attempt to get the aws creds from ENV; fail back to prompting the user
@@ -130,9 +133,9 @@ func NewAWSConfig(extFuncName string) (*AWSConfig, error) {
 		cfg.region = common.EnvOrString("AWS_DEFAULT_REGION", false)
 	} else {
 		// Just get the creds from the user
-		cfg.accessKeyID = common.PromptString("AWS_ACCESS_KEY_ID", false)
-		cfg.secretAccessKey = common.EnvOrString("AWS_SECRET_ACCESS_KEY", true)
-		cfg.region = common.EnvOrString("AWS_DEFAULT_REGION", false)
+		cfg.accessKeyID = common.PromptString("AWS_ACCESS_KEY_ID", false, "")
+		cfg.secretAccessKey = common.PromptString("AWS_SECRET_ACCESS_KEY", true, "")
+		cfg.region = common.PromptString("AWS_DEFAULT_REGION", false, "")
 	}
 
 	// set AWS env variables in this proc
@@ -150,12 +153,30 @@ func NewAWSConfig(extFuncName string) (*AWSConfig, error) {
 
 	cfg.awsSession = sess
 	cfg.extFuncName = extFuncName
-	cfg.Resources.lambdaRoleName = extFuncName + "-lambda-role"
-	cfg.Resources.lambdaFuncName = extFuncName + "-lambda"
-	cfg.Resources.lambdaPolicyName = extFuncName + "-lambda-policy"
-	cfg.Resources.lambdaRuntime = lambda.RuntimePython38
-	cfg.Resources.gatewayPolicyName = extFuncName + "-gateway-policy"
-	cfg.Resources.gatewayRoleName = extFuncName + "-gateway-role"
+	cfg.Resources.lambdaRoleName = common.PromptString(
+		"What would you like the lambda role to be named?",
+		false,
+		extFuncName+"-lambda-role")
+	cfg.Resources.lambdaFuncName = common.PromptString(
+		"What would you like the lambda to be named?",
+		false,
+		extFuncName+"-lambda")
+	cfg.Resources.lambdaPolicyName = common.PromptString(
+		"What would you like the lambda policy to be named?",
+		false,
+		extFuncName+"-lambda-policy")
+	cfg.Resources.lambdaRuntime = common.PromptString(
+		"What lambda runtime would you like to use?",
+		false,
+		lambda.RuntimePython38)
+	cfg.Resources.gatewayPolicyName = common.PromptString(
+		"What would you like the gateway policy to be named?",
+		false,
+		extFuncName+"-gateway-policy")
+	cfg.Resources.gatewayRoleName = common.PromptString(
+		"What would you like the gateway role to be named?",
+		false,
+		extFuncName+"-gateway-role")
 	cfg.Resources.lambdaHandler = "lambda_function.lambda_handler"
 	cfg.Resources.gatewayStage = "prod"
 
@@ -449,11 +470,13 @@ func (scfg *SnowflakeConfig) AddTrustToAWSRole() error {
 		return err
 	}
 
-	scfg.executeSnowflakeQuery(fmt.Sprintf(`create or replace external function jqa_test_external_func(n integer, v varchar)
+	scfg.executeSnowflakeQuery(fmt.Sprintf(`create or replace external function %s
     returns variant
-    api_integration = jqa_test_api_integration
+    api_integration = %s_api_integration
     as '%s'
-    ;`, scfg.Resources.gatewayEndpoint), func(scan func(dest ...interface{}) error) error {
+	;`, scfg.extFuncSignature,
+		scfg.extFuncName,
+		scfg.Resources.gatewayEndpoint), func(scan func(dest ...interface{}) error) error {
 		var s string = ""
 		err = scan(&s)
 		if err != nil {
