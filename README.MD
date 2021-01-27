@@ -87,17 +87,14 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started:
-**To avoid retyping too much info. Do a search and replace with your text editor for the following:**
-`tampajohn`, `goflake`, `goflake`, `john@rungo.io`, `goflake`, `A simple CLI for creating integrating your Data Cloud (Snowflake) with your Cloud Provider.`
-
 
 ### Built With
 
-* []()
-* []()
-* []()
-
+* [Go](https://golang.org)
+* [goterm](https://github.com/buger/goterm)
+* [promptui](https://github.com/manifoldco/promptui)	
+* [gosnowflake](github.com/snowflakedb/gosnowflake)	
+* [aws-sdk-go](github.com/aws/aws-sdk-go)
 
 
 <!-- GETTING STARTED -->
@@ -185,14 +182,14 @@ Project Link: [https://github.com/tampajohn/goflake](https://github.com/tampajoh
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/tampajohn/goflake.svg?style=for-the-badge
-[contributors-url]: https://github.com/tampajohn/repo/graphs/contributors
+[contributors-url]: https://github.com/tampajohn/goflake/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/tampajohn/goflake.svg?style=for-the-badge
-[forks-url]: https://github.com/tampajohn/repo/network/members
+[forks-url]: https://github.com/tampajohn/goflake/network/members
 [stars-shield]: https://img.shields.io/github/stars/tampajohn/goflake.svg?style=for-the-badge
-[stars-url]: https://github.com/tampajohn/repo/stargazers
+[stars-url]: https://github.com/tampajohn/goflake/stargazers
 [issues-shield]: https://img.shields.io/github/issues/tampajohn/goflake.svg?style=for-the-badge
-[issues-url]: https://github.com/tampajohn/repo/issues
+[issues-url]: https://github.com/tampajohn/goflake/issues
 [license-shield]: https://img.shields.io/github/license/tampajohn/goflake.svg?style=for-the-badge
-[license-url]: https://github.com/tampajohn/repo/blob/master/LICENSE.txt
+[license-url]: https://github.com/tampajohn/goflake/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/tampajohn
