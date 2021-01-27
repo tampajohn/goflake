@@ -35,15 +35,19 @@ func NewSnowflakeConfig(awsCfg *AWSConfig) *SnowflakeConfig {
 		cfg.sfPass = common.PromptString("SNOWFLAKE_PASS", true, "")
 	}
 
+	database := common.PromptString("What database would you like to use?", false, "")
+	role := common.PromptString("What Snowflake Role do you wish to use (requires ability to create integrations)?", false, "ACCOUNT_ADMIN")
+	schema := common.PromptString("What schema would you like the external function created in?", false, "PUBLIC")
+
 	dsn, err := sf.DSN(&sf.Config{
 		Account:  cfg.sfAccount,
 		User:     cfg.sfUser,
 		Password: cfg.sfPass,
 		Host:     cfg.sfAccount + ".snowflakecomputing.com",
-		Database: "JQA_EXTFUNCS",
+		Database: database,
 		Port:     443,
-		Role:     "ACCOUNTADMIN",
-		Schema:   "PUBLIC",
+		Role:     role,
+		Schema:   schema,
 		Protocol: "https",
 	})
 
