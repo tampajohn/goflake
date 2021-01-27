@@ -32,20 +32,21 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/tampajohn/goflake">
+  <!-- <a href="https://github.com/tampajohn/goflake">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
+  </a> -->
 
-  <h3 align="center">goflake</h3>
+  <h2 align="center">goflake</h2>
 
   <p align="center">
     A simple CLI for creating integrating your Data Cloud (Snowflake) with your Cloud Provider.
+    <!-- <br /> -->
+    <!-- <a href="https://github.com/tampajohn/goflake"><strong>Explore the docs »</strong></a> -->
     <br />
-    <a href="https://github.com/tampajohn/goflake"><strong>Explore the docs »</strong></a>
     <br />
-    <br />
+    <!--
     <a href="https://github.com/tampajohn/goflake">View Demo</a>
-    ·
+    · -->
     <a href="https://github.com/tampajohn/goflake/issues">Report Bug</a>
     ·
     <a href="https://github.com/tampajohn/goflake/issues">Request Feature</a>
