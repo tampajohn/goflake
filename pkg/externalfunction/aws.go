@@ -3,6 +3,7 @@ package externalfunction
 import (
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -32,6 +33,7 @@ type AWSConfig struct {
 
 type AWSResources struct {
 	lambdaFuncName         string
+	lambdaFuncARN          string
 	lambdaPolicyName       string
 	lambdaRoleName         string
 	lambdaRoleARN          string
@@ -43,6 +45,8 @@ type AWSResources struct {
 	gatewayEndpoint        string
 	gatewayID              string
 	gatewayName            string
+	gatewayMethod          string
+	gatewayRootResource    string
 	gatewayDeploymentID    string
 	gatewayStage           string
 	lambdaFunctionZipBytes []byte
@@ -50,7 +54,7 @@ type AWSResources struct {
 }
 
 const (
-	LambdaZip     = `aW1wb3J0IGpzb24KCmRlZiBsYW1iZGFfaGFuZGxlcihldmVudCwgY29udGV4dCk6CgogICAgIyAyMDAgaXMgdGhlIEhUVFAgc3RhdHVzIGNvZGUgZm9yICJvayIuCiAgICBzdGF0dXNfY29kZSA9IDIwMAoKICAgICMgVGhlIHJldHVybiB2YWx1ZSB3aWxsIGNvbnRhaW4gYW4gYXJyYXkgb2YgYXJyYXlzIChvbmUgaW5uZXIgYXJyYXkgcGVyIGlucHV0IHJvdykuCiAgICBhcnJheV9vZl9yb3dzX3RvX3JldHVybiA9IFsgXQoKICAgIHRyeToKICAgICAgICAjIEZyb20gdGhlIGlucHV0IHBhcmFtZXRlciBuYW1lZCAiZXZlbnQiLCBnZXQgdGhlIGJvZHksIHdoaWNoIGNvbnRhaW5zCiAgICAgICAgIyB0aGUgaW5wdXQgcm93cy4KICAgICAgICBldmVudF9ib2R5ID0gZXZlbnRbImJvZHkiXQoKICAgICAgICAjIENvbnZlcnQgdGhlIGlucHV0IGZyb20gYSBKU09OIHN0cmluZyBpbnRvIGEgSlNPTiBvYmplY3QuCiAgICAgICAgcGF5bG9hZCA9IGpzb24ubG9hZHMoZXZlbnRfYm9keSkKICAgICAgICAjIFRoaXMgaXMgYmFzaWNhbGx5IGFuIGFycmF5IG9mIGFycmF5cy4gVGhlIGlubmVyIGFycmF5IGNvbnRhaW5zIHRoZQogICAgICAgICMgcm93IG51bWJlciwgYW5kIGEgdmFsdWUgZm9yIGVhY2ggcGFyYW1ldGVyIHBhc3NlZCB0byB0aGUgZnVuY3Rpb24uCiAgICAgICAgcm93cyA9IHBheWxvYWRbImRhdGEiXQoKICAgICAgICAjIEZvciBlYWNoIGlucHV0IHJvdyBpbiB0aGUgSlNPTiBvYmplY3QuLi4KICAgICAgICBmb3Igcm93IGluIHJvd3M6CiAgICAgICAgICAgIyBSZWFkIHRoZSBpbnB1dCByb3cgbnVtYmVyICh0aGUgb3V0cHV0IHJvdyBudW1iZXIgd2lsbCBiZSB0aGUgc2FtZSkuCiAgICAgICAgICAgIHJvd19udW1iZXIgPSByb3dbMF0KICAgICAgICAKCiAgICAgICAgICAgICMgQ29tcG9zZSB0aGUgb3V0cHV0IGJhc2VkIG9uIHRoZSBpbnB1dC4gVGhpcyBzaW1wbGUgZXhhbXBsZQogICAgICAgICAgICAjIG1lcmVseSBlY2hvZXMgdGhlIGlucHV0IGJ5IGNvbGxlY3RpbmcgdGhlIHZhbHVlcyBpbnRvIGFuIGFycmF5IHRoYXQKICAgICAgICAgICAgIyB3aWxsIGJlIHRyZWF0ZWQgYXMgYSBzaW5nbGUgVkFSSUFOVCB2YWx1ZS4KICAgICAgICAgICAgb3V0cHV0X3ZhbHVlID0gWyJFY2hvaW5nIGlucHV0czoiXQogICAgICAgICAgICAKICAgICAgICAgICAgZm9yIGkgaW4gcmFuZ2UobGVuKHJvd1sxOl0pKToKICAgICAgICAgICAgICAgIG91dHB1dF92YWx1ZS5hcHBlbmQocm93W2ldKQoKICAgICAgICAgICAgIyBQdXQgdGhlIHJldHVybmVkIHJvdyBudW1iZXIgYW5kIHRoZSByZXR1cm5lZCB2YWx1ZSBpbnRvIGFuIGFycmF5LgogICAgICAgICAgICByb3dfdG9fcmV0dXJuID0gW3Jvd19udW1iZXIsIG91dHB1dF92YWx1ZV0KCiAgICAgICAgICAgICMgLi4uIGFuZCBhZGQgdGhhdCBhcnJheSB0byB0aGUgbWFpbiBhcnJheS4KICAgICAgICAgICAgYXJyYXlfb2Zfcm93c190b19yZXR1cm4uYXBwZW5kKHJvd190b19yZXR1cm4pCgogICAgICAgIGpzb25fY29tcGF0aWJsZV9zdHJpbmdfdG9fcmV0dXJuID0ganNvbi5kdW1wcyh7ImRhdGEiIDogYXJyYXlfb2Zfcm93c190b19yZXR1cm59KQoKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZXJyOgogICAgICAgICMgNDAwIGltcGxpZXMgc29tZSB0eXBlIG9mIGVycm9yLgogICAgICAgIHN0YXR1c19jb2RlID0gNDAwCiAgICAgICAgIyBUZWxsIGNhbGxlciB3aGF0IHRoaXMgZnVuY3Rpb24gY291bGQgbm90IGhhbmRsZS4KICAgICAgICBqc29uX2NvbXBhdGlibGVfc3RyaW5nX3RvX3JldHVybiA9IGV2ZW50X2JvZHkKCiAgICAjIFJldHVybiB0aGUgcmV0dXJuIHZhbHVlIGFuZCBIVFRQIHN0YXR1cyBjb2RlLgogICAgcmV0dXJuIHsKICAgICAgICAnc3RhdHVzQ29kZSc6IHN0YXR1c19jb2RlLAogICAgICAgICdib2R5JzoganNvbl9jb21wYXRpYmxlX3N0cmluZ190b19yZXR1cm4KICAgIH0K`
+	LambdaZip     = `UEsDBBQAAAAIAIOOO1J7JNvACAMAAJ0HAAASABwAbGFtYmRhX2Z1bmN0aW9uLnB5VVQJAAOW7hFgDDQUYHV4CwABBPUBAAAEFAAAAJVVTWvcMBC9768Y3ENsWExaelrIIYSEtoc0pEsvy2JkezZWaktGkpMsIf+9M5K9/khL6bJgWzN682beaCSbVhsHj1ar1arEA9SiyUuRVUKVNZoYn1C5NRRaOXxxyWa1Avp9gE/n5yAtuArhy3Z7B9YJ11nyKxEO2kCkf0Wp9w2WzFsueN8AsaW9Bl1nFDyJukN4lnXtIwmpQNDfGHEEfQgvFmKtEKRSaHpTS29StZ0Do5+TEM5bMn3IaMlmTmd9iAvYwT6Edua48S+Bx43RjU8kQLXCiAYdQSt6lhD5EkRreEDn3XJdHtfwXMmiGtjaCdyIxAzSk8XDZLyZuPiPXcRfUc8q7L7S6gmNm6AcmJ6Abz++31ItjVQPZHB6WNL5IxZuDNOKY61FSTFY05TfbTzGTiaxthUpSP9cWFmIuj7+oeipl2la9CFlpjgBo2RBdU2OZk0wJdELonIzoKBSjXVthbVUWMqBszx0qnCSqJ7AuG7Ev89kF5XCiXmVbgbQU6HpzaNNa5KOkMyi92L0UX4Pd49UsJlufSoQ86ru3GLZd2qOfo+lrJJ0CsieWe95wR+78/3JPnNkvekA2oDUxyE5qDpajYzSIJWVTVsj4Ivg5wKoQYOkIBaVRjtJJmfF6prqwZ3D614X2zfRILirhFsgnpI0KBwxEpZEtYRCHH5e3n+9vN0GrHnyIYssqE+nLromSqFrad1uov3MffbBMkkvklAPGNeoYi7fx80+SWaavYuUirZFVXp3uU9Wi1zuunCkwjCgZCZicrfObIH6rD7v9Z1NllHw9YzVfsmDejKcjrL0JR+qH45C4wff+3h/mWmTnMfFSeo8AGjuNq1wMq8xC9NjxtzPiLJrWhu/hnMGm7+Fe+uh8aXA1sG1f9DB5cZAY6Yj9TPfDtSkkvrM6oZ66NgiDxXy02ZMbn430K7pdEK+DWgs8XnjUjk+A8O0oKbu6hKUdhCuqvR/0h7n4XAZ3QeTW95JLNbygguherfXU9yz4HJFHmebaWrr0YVDkvFfFP2Gt9VvUEsBAh4DFAAAAAgAg447Unsk28AIAwAAnQcAABIAGAAAAAAAAQAAAKSBAAAAAGxhbWJkYV9mdW5jdGlvbi5weVVUBQADlu4RYHV4CwABBPUBAAAEFAAAAFBLBQYAAAAAAQABAFgAAABUAwAAAAA=`
 	TrustDocument = `{
 		"Version": "2012-10-17",
 		"Statement": {
@@ -200,6 +204,29 @@ func NewAWSConfig(extFuncName string, extFuncSignature string) (*AWSConfig, erro
 		}
 
 		cfg.Resources.lambdaFunctionZipBytes = functionData
+	} else {
+		zipPath := common.PromptStringWithValidator("What is the path of the zip file you'd like to use?", false, "", func(p string) error {
+			info, err := os.Stat(p)
+			if os.IsNotExist(err) {
+				return err
+			}
+			if info.IsDir() {
+				return fmt.Errorf("This is a directory, not a file")
+			}
+			return nil
+		})
+		f, err := os.Open(zipPath)
+		defer f.Close()
+		if err != nil {
+			return cfg, err
+		}
+		bytes, err := ioutil.ReadAll(f)
+		if err != nil {
+			return cfg, err
+		}
+		handler := common.PromptString("What is the handler for your lambda function (format is {filename}.{handler function})?", false, "lambda_function.lambda_handler")
+		cfg.Resources.lambdaHandler = handler
+		cfg.Resources.lambdaFunctionZipBytes = bytes
 	}
 
 	return cfg, nil
@@ -212,10 +239,7 @@ func APIARN(apiID *string, functionARN *string, functionName *string) string {
 		aws.StringValue(apiID), 1)
 }
 
-func (cfg *AWSConfig) ConfigureAwsRoles() error {
-
-	a := iam.New(cfg.awsSession)
-
+func (cfg *AWSConfig) CreateLambdaRole(a *iam.IAM) error {
 	roleInput := &iam.CreateRoleInput{
 		RoleName:                 aws.String(cfg.Resources.lambdaRoleName),
 		AssumeRolePolicyDocument: aws.String(TrustDocument),
@@ -241,12 +265,21 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
+func (cfg *AWSConfig) SetCurrentAccountID() error {
 	s := sts.New(cfg.awsSession)
 	id, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 
+	if err != nil {
+		return err
+	}
 	cfg.awsAccount = *id.Account
+	return nil
+}
 
+func (cfg *AWSConfig) CreateOrConfigureLambdaFunc(a *iam.IAM) error {
 	lrole, err := a.GetRole(&iam.GetRoleInput{
 		RoleName: aws.String(cfg.Resources.lambdaRoleName),
 	})
@@ -254,7 +287,6 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	cfg.Resources.lambdaRoleARN = *lrole.Role.Arn
 	l := lambda.New(cfg.awsSession, cfg.Resources.regionConfig)
 
-	var functionARN *string
 	lf, err := l.CreateFunction(&lambda.CreateFunctionInput{
 		FunctionName: aws.String(cfg.Resources.lambdaFuncName),
 		Role:         aws.String(cfg.Resources.lambdaRoleARN),
@@ -271,7 +303,7 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 		return err
 	}
 	if lf != nil {
-		functionARN = lf.FunctionArn
+		cfg.Resources.lambdaFuncARN = *lf.FunctionArn
 	}
 	if err != nil {
 		lf2, err := l.GetFunction(&lambda.GetFunctionInput{
@@ -281,11 +313,28 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 		if err != nil {
 			return err
 		}
-		functionARN = lf2.Configuration.FunctionArn
+		cfg.Resources.lambdaFuncARN = *lf2.Configuration.FunctionArn
+	}
+	permissionsInput := &lambda.AddPermissionInput{
+		Action:       aws.String("lambda:InvokeFunction"),
+		FunctionName: aws.String(cfg.Resources.lambdaFuncName),
+		Principal:    aws.String("apigateway.amazonaws.com"),
+		StatementId: aws.String(fmt.Sprintf("apigateway-%s-test",
+			cfg.Resources.gatewayID)),
+		SourceArn: aws.String(fmt.Sprintf("%s/*/%s/",
+			APIARN(aws.String(cfg.Resources.gatewayID), aws.String(cfg.Resources.lambdaFuncARN), aws.String(cfg.Resources.lambdaFuncName)),
+			cfg.Resources.gatewayMethod)),
+	}
+	_, err = l.AddPermission(permissionsInput)
+
+	if err != nil {
+		return err
 	}
 
-	g := apigateway.New(cfg.awsSession, cfg.Resources.regionConfig)
+	return nil
+}
 
+func (cfg *AWSConfig) CreateRestAPI(g *apigateway.APIGateway) error {
 	gw, err := g.CreateRestApi(&apigateway.CreateRestApiInput{
 		Name: aws.String(cfg.Resources.gatewayName),
 	})
@@ -301,47 +350,21 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	r2, err := g.GetResources(&apigateway.GetResourcesInput{
 		RestApiId: gw.Id,
 	})
-	method := aws.String("POST")
+	cfg.Resources.gatewayMethod = "POST"
 
 	var rootResource *apigateway.Resource
 	if len(r2.Items) > 0 {
 		rootResource = r2.Items[0]
+		cfg.Resources.gatewayRootResource = *rootResource.Id
 	}
+	return nil
+}
 
-	permissionsInput := &lambda.AddPermissionInput{
-		Action:       aws.String("lambda:InvokeFunction"),
-		FunctionName: aws.String(cfg.Resources.lambdaFuncName),
-		Principal:    aws.String("apigateway.amazonaws.com"),
-		StatementId: aws.String(fmt.Sprintf("apigateway-%s-test",
-			cfg.Resources.gatewayID)),
-		SourceArn: aws.String(fmt.Sprintf("%s/*/%s/",
-			APIARN(gw.Id, functionARN, aws.String(cfg.Resources.lambdaFuncName)),
-			aws.StringValue(method))),
-	}
-	_, err = l.AddPermission(permissionsInput)
-
-	if err != nil {
-		return err
-	}
-
-	// TODO: this should be done after the deployment, might occur as part of deployment process...
-	// permissionsInput.SourceArn = aws.String(cfg.Resources.gatewayEndpoint)
-	// permissionsInput.StatementId = aws.String(fmt.Sprintf("apigateway-%s-prod",
-	// 	cfg.Resources.gatewayID))
-
-	// _, err = l.AddPermission(permissionsInput)
-
-	// if err != nil {
-	// 	fmt.Println(*permissionsInput.SourceArn)
-	// 	fmt.Println(*permissionsInput.StatementId)
-	// 	fmt.Println(err)
-	// 	return err
-	// }
-
-	_, err = g.PutMethod(&apigateway.PutMethodInput{
-		HttpMethod:        method,
+func (cfg *AWSConfig) AddLambdaIntegrationToRestAPI(g *apigateway.APIGateway) error {
+	_, err := g.PutMethod(&apigateway.PutMethodInput{
+		HttpMethod:        aws.String(cfg.Resources.gatewayMethod),
 		RestApiId:         aws.String(cfg.Resources.gatewayID),
-		ResourceId:        rootResource.Id,
+		ResourceId:        aws.String(cfg.Resources.gatewayRootResource),
 		AuthorizationType: aws.String("AWS_IAM"),
 	})
 
@@ -351,14 +374,14 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 
 	uriString := fmt.Sprintf("arn:aws:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations",
 		cfg.region,
-		aws.StringValue(functionARN))
+		cfg.Resources.lambdaFuncARN)
 
 	params := &apigateway.PutIntegrationInput{
-		HttpMethod:            method,
-		ResourceId:            rootResource.Id,
-		RestApiId:             gw.Id,
+		HttpMethod:            aws.String(cfg.Resources.gatewayMethod),
+		ResourceId:            aws.String(cfg.Resources.gatewayRootResource),
+		RestApiId:             aws.String(cfg.Resources.gatewayID),
 		Type:                  aws.String("AWS_PROXY"),
-		IntegrationHttpMethod: method,
+		IntegrationHttpMethod: aws.String(cfg.Resources.gatewayMethod),
 		RequestTemplates: map[string]*string{
 			"application/x-www-form-urlencoded": aws.String(`{"body": $input.json("$")}`),
 		},
@@ -371,8 +394,8 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	}
 
 	integrationResponseParams := &apigateway.PutIntegrationResponseInput{
-		HttpMethod:       method,
-		ResourceId:       rootResource.Id,
+		HttpMethod:       aws.String(cfg.Resources.gatewayMethod),
+		ResourceId:       aws.String(cfg.Resources.gatewayRootResource),
 		RestApiId:        aws.String(cfg.Resources.gatewayID),
 		StatusCode:       aws.String("200"),
 		SelectionPattern: aws.String(".*"),
@@ -384,13 +407,41 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	}
 
 	methodResponsParams := &apigateway.PutMethodResponseInput{
-		HttpMethod:     method,
-		ResourceId:     rootResource.Id,
+		HttpMethod:     aws.String(cfg.Resources.gatewayMethod),
+		ResourceId:     aws.String(cfg.Resources.gatewayRootResource),
 		RestApiId:      aws.String(cfg.Resources.gatewayID),
 		StatusCode:     aws.String("200"),
 		ResponseModels: map[string]*string{},
 	}
 	_, err = g.PutMethodResponse(methodResponsParams)
+
+	return err
+}
+
+func (cfg *AWSConfig) ConfigureAwsRoles() error {
+	err := cfg.SetCurrentAccountID()
+	if err != nil {
+		return err
+	}
+
+	a := iam.New(cfg.awsSession)
+	err = cfg.CreateLambdaRole(a)
+	if err != nil {
+		return err
+	}
+
+	g := apigateway.New(cfg.awsSession, cfg.Resources.regionConfig)
+	err = cfg.CreateRestAPI(g)
+	if err != nil {
+		return err
+	}
+
+	err = cfg.CreateOrConfigureLambdaFunc(a)
+	if err != nil {
+		return err
+	}
+
+	err = cfg.AddLambdaIntegrationToRestAPI(g)
 	return err
 }
 
