@@ -21,21 +21,16 @@ def lambda_handler(event, context):
 
         # For each input row in the JSON object...
         for row in rows:
-            # Read the input row number (the output row number will be the same).
+           # Read the input row number (the output row number will be the same).
             row_number = row[0]
-
-            # Read the first input parameter's value. For example, this can be a
-            # numeric value or a string, or it can be a compound value such as
-            # a JSON structure.
-            input_value_1 = row[1]
-
-            # Read the second input parameter's value.
-            input_value_2 = row[2]
-
+        
             # Compose the output based on the input. This simple example
             # merely echoes the input by collecting the values into an array that
             # will be treated as a single VARIANT value.
-            output_value = ["Echoing inputs:", input_value_1, input_value_2]
+            output_value = ["Echoing inputs:"]
+            
+            for i in range(len(row[1:])):
+                output_value.append(row[i])
 
             # Put the returned row number and the returned value into an array.
             row_to_return = [row_number, output_value]

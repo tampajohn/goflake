@@ -36,7 +36,7 @@ func NewSnowflakeConfig(awsCfg *AWSConfig) *SnowflakeConfig {
 	}
 
 	database := common.PromptString("What database would you like to use?", false, "")
-	role := common.PromptString("What Snowflake Role do you wish to use (requires ability to create integrations)?", false, "ACCOUNT_ADMIN")
+	role := common.PromptString("What Snowflake Role do you wish to use (requires ability to create integrations)?", false, "ACCOUNTADMIN")
 	schema := common.PromptString("What schema would you like the external function created in?", false, "PUBLIC")
 
 	dsn, err := sf.DSN(&sf.Config{

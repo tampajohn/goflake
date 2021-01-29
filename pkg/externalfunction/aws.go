@@ -31,23 +31,26 @@ type AWSConfig struct {
 }
 
 type AWSResources struct {
-	lambdaFuncName      string
-	lambdaPolicyName    string
-	lambdaRoleName      string
-	lambdaRoleARN       string
-	lambdaRuntime       string
-	lambdaHandler       string
-	gatewayPolicyName   string
-	gatewayRoleName     string
-	gatewayRoleARN      string
-	gatewayEndpoint     string
-	gatewayID           string
-	gatewayDeploymentID string
-	gatewayStage        string
+	lambdaFuncName         string
+	lambdaPolicyName       string
+	lambdaRoleName         string
+	lambdaRoleARN          string
+	lambdaRuntime          string
+	lambdaHandler          string
+	gatewayPolicyName      string
+	gatewayRoleName        string
+	gatewayRoleARN         string
+	gatewayEndpoint        string
+	gatewayID              string
+	gatewayName            string
+	gatewayDeploymentID    string
+	gatewayStage           string
+	lambdaFunctionZipBytes []byte
+	regionConfig           *aws.Config
 }
 
 const (
-	LambdaZip     = `UEsDBBQAAAAIAHN7OVIrnQNoRAMAAJAIAAASABwAbGFtYmRhX2Z1bmN0aW9uLnB5VVQJAAO6KQ9gvCkPYHV4CwABBPUBAAAEFAAAAJVVTWvcMBC9768Q7iG7YEwSelrIIYSEtoc0pEsvSzGyNc4qtSUjyUmW0P/eGUlef2yW0sWwtjR68+bNh2TTauPYs9VqsRBQsZo3heD5jitRg1nCCyiXslIrB29utV4sGP4+scvzcyYtcztgXzabB2Ydd51FOwGs0oYl+neSeduwk/udKzrXQ2zwrAHXGcVeeN0Be5V17T1xqRjHxxi+Z7oKL5YttQImlQITt1p8k6rtHDP6dRXc+Z1cVzku2dzpPLq4Ylv2K7h2Zr/2L4HHndGNDyRAtdzwBhxCK/wXLPESJCl7AufNCi32KXvdyXLXs7UjuAGJGGSHHQ+T02Hk4j+2CX0lkVU4faPVCxg3QqmIHmfffny/Ry2NVE+44XS/pItnKN3gpuX7WnOBPiinGb3b5eB7NfK12WEG8Sm4lSWv6/0Homc+TWPR+5CJ4ggMg2WqawowKcIIpBeSSsUAHKUadG25tSgsxkBRVp0qnUSqBzDSDfnHSLaJ4I5PVbrrQQ9C45tHG2uSDZDEIloR+pD+gPcIqNgkcTEWtqRV3bnZsi/VAvwZi2GtsgkiWubR8oo+tucj+jOXlTTWzWvvzAb5shDqG2/aGlK0x3SVmCV0zWeA6A+MLKPseIrHcknpQ7rDOcwgNn2HOQqmtkMhuZ3BDRXXldhAMA3Q0839+fwixnhxOkYLWDXiZJAnoS8j9OUR9A3FYEMCYnqwjLGqtBoSmYUSt5LU61WcAaFogJUP5U6DHdVAQZVe11hH1HG07inZ2Hx9o7gddzPEQ20Y4A4ZcUupQBTk8PP68ev1/eajuEMUIXCaVsktUgrdjut2jRNoovr081ihhy5MkTD/kMeofKlBJ3vB6yS044qeDNOhxNMJ9SMe2IZhIAjh1eqFC93f+Fl/7O/EGM9424ISywmd1eCSZl5O9c2dLGrIQwdMmPuxKLqmtcv3MFrY+pS7PxEa3kpoHbv1fzirKKdgzPgW+UwXItaXxBKxusH071ugOYp22gzBTa9DPDUeyEAXIE5imjAkle/3fkBiPXa1YEo7Fm7n7H/CHq6A/v59DFtufg1TsuZ3enAVzd4Pfs+CyQ1anK3HoaWDCbnEzX9R9Af+LP4CUEsBAh4DFAAAAAgAc3s5UiudA2hEAwAAkAgAABIAGAAAAAAAAQAAAKSBAAAAAGxhbWJkYV9mdW5jdGlvbi5weVVUBQADuikPYHV4CwABBPUBAAAEFAAAAFBLBQYAAAAAAQABAFgAAACQAwAAAAA=`
+	LambdaZip     = `aW1wb3J0IGpzb24KCmRlZiBsYW1iZGFfaGFuZGxlcihldmVudCwgY29udGV4dCk6CgogICAgIyAyMDAgaXMgdGhlIEhUVFAgc3RhdHVzIGNvZGUgZm9yICJvayIuCiAgICBzdGF0dXNfY29kZSA9IDIwMAoKICAgICMgVGhlIHJldHVybiB2YWx1ZSB3aWxsIGNvbnRhaW4gYW4gYXJyYXkgb2YgYXJyYXlzIChvbmUgaW5uZXIgYXJyYXkgcGVyIGlucHV0IHJvdykuCiAgICBhcnJheV9vZl9yb3dzX3RvX3JldHVybiA9IFsgXQoKICAgIHRyeToKICAgICAgICAjIEZyb20gdGhlIGlucHV0IHBhcmFtZXRlciBuYW1lZCAiZXZlbnQiLCBnZXQgdGhlIGJvZHksIHdoaWNoIGNvbnRhaW5zCiAgICAgICAgIyB0aGUgaW5wdXQgcm93cy4KICAgICAgICBldmVudF9ib2R5ID0gZXZlbnRbImJvZHkiXQoKICAgICAgICAjIENvbnZlcnQgdGhlIGlucHV0IGZyb20gYSBKU09OIHN0cmluZyBpbnRvIGEgSlNPTiBvYmplY3QuCiAgICAgICAgcGF5bG9hZCA9IGpzb24ubG9hZHMoZXZlbnRfYm9keSkKICAgICAgICAjIFRoaXMgaXMgYmFzaWNhbGx5IGFuIGFycmF5IG9mIGFycmF5cy4gVGhlIGlubmVyIGFycmF5IGNvbnRhaW5zIHRoZQogICAgICAgICMgcm93IG51bWJlciwgYW5kIGEgdmFsdWUgZm9yIGVhY2ggcGFyYW1ldGVyIHBhc3NlZCB0byB0aGUgZnVuY3Rpb24uCiAgICAgICAgcm93cyA9IHBheWxvYWRbImRhdGEiXQoKICAgICAgICAjIEZvciBlYWNoIGlucHV0IHJvdyBpbiB0aGUgSlNPTiBvYmplY3QuLi4KICAgICAgICBmb3Igcm93IGluIHJvd3M6CiAgICAgICAgICAgIyBSZWFkIHRoZSBpbnB1dCByb3cgbnVtYmVyICh0aGUgb3V0cHV0IHJvdyBudW1iZXIgd2lsbCBiZSB0aGUgc2FtZSkuCiAgICAgICAgICAgIHJvd19udW1iZXIgPSByb3dbMF0KICAgICAgICAKCiAgICAgICAgICAgICMgQ29tcG9zZSB0aGUgb3V0cHV0IGJhc2VkIG9uIHRoZSBpbnB1dC4gVGhpcyBzaW1wbGUgZXhhbXBsZQogICAgICAgICAgICAjIG1lcmVseSBlY2hvZXMgdGhlIGlucHV0IGJ5IGNvbGxlY3RpbmcgdGhlIHZhbHVlcyBpbnRvIGFuIGFycmF5IHRoYXQKICAgICAgICAgICAgIyB3aWxsIGJlIHRyZWF0ZWQgYXMgYSBzaW5nbGUgVkFSSUFOVCB2YWx1ZS4KICAgICAgICAgICAgb3V0cHV0X3ZhbHVlID0gWyJFY2hvaW5nIGlucHV0czoiXQogICAgICAgICAgICAKICAgICAgICAgICAgZm9yIGkgaW4gcmFuZ2UobGVuKHJvd1sxOl0pKToKICAgICAgICAgICAgICAgIG91dHB1dF92YWx1ZS5hcHBlbmQocm93W2ldKQoKICAgICAgICAgICAgIyBQdXQgdGhlIHJldHVybmVkIHJvdyBudW1iZXIgYW5kIHRoZSByZXR1cm5lZCB2YWx1ZSBpbnRvIGFuIGFycmF5LgogICAgICAgICAgICByb3dfdG9fcmV0dXJuID0gW3Jvd19udW1iZXIsIG91dHB1dF92YWx1ZV0KCiAgICAgICAgICAgICMgLi4uIGFuZCBhZGQgdGhhdCBhcnJheSB0byB0aGUgbWFpbiBhcnJheS4KICAgICAgICAgICAgYXJyYXlfb2Zfcm93c190b19yZXR1cm4uYXBwZW5kKHJvd190b19yZXR1cm4pCgogICAgICAgIGpzb25fY29tcGF0aWJsZV9zdHJpbmdfdG9fcmV0dXJuID0ganNvbi5kdW1wcyh7ImRhdGEiIDogYXJyYXlfb2Zfcm93c190b19yZXR1cm59KQoKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZXJyOgogICAgICAgICMgNDAwIGltcGxpZXMgc29tZSB0eXBlIG9mIGVycm9yLgogICAgICAgIHN0YXR1c19jb2RlID0gNDAwCiAgICAgICAgIyBUZWxsIGNhbGxlciB3aGF0IHRoaXMgZnVuY3Rpb24gY291bGQgbm90IGhhbmRsZS4KICAgICAgICBqc29uX2NvbXBhdGlibGVfc3RyaW5nX3RvX3JldHVybiA9IGV2ZW50X2JvZHkKCiAgICAjIFJldHVybiB0aGUgcmV0dXJuIHZhbHVlIGFuZCBIVFRQIHN0YXR1cyBjb2RlLgogICAgcmV0dXJuIHsKICAgICAgICAnc3RhdHVzQ29kZSc6IHN0YXR1c19jb2RlLAogICAgICAgICdib2R5JzoganNvbl9jb21wYXRpYmxlX3N0cmluZ190b19yZXR1cm4KICAgIH0K`
 	TrustDocument = `{
 		"Version": "2012-10-17",
 		"Statement": {
@@ -143,6 +146,8 @@ func NewAWSConfig(extFuncName string, extFuncSignature string) (*AWSConfig, erro
 	os.Setenv("AWS_SECRET_ACCESS_KEY", cfg.secretAccessKey)
 	os.Setenv("AWS_DEFAULT_REGION", cfg.region)
 
+	cfg.Resources.regionConfig = &aws.Config{Region: &cfg.region}
+
 	sess, err := session.NewSession(&aws.Config{
 		Credentials: credentials.NewEnvCredentials(),
 	})
@@ -161,6 +166,10 @@ func NewAWSConfig(extFuncName string, extFuncSignature string) (*AWSConfig, erro
 		"What would you like the lambda to be named?",
 		false,
 		extFuncName+"-lambda")
+	cfg.Resources.gatewayName = common.PromptString(
+		"What would you like the api gateway to be named?",
+		false,
+		extFuncName+"-gateway")
 	cfg.Resources.lambdaPolicyName = common.PromptString(
 		"What would you like the lambda policy to be named?",
 		false,
@@ -177,8 +186,21 @@ func NewAWSConfig(extFuncName string, extFuncSignature string) (*AWSConfig, erro
 		"What would you like the gateway role to be named?",
 		false,
 		extFuncName+"-gateway-role")
-	cfg.Resources.lambdaHandler = "lambda_function.lambda_handler"
-	cfg.Resources.gatewayStage = "prod"
+	cfg.Resources.gatewayStage = common.PromptString(
+		"What would you like the gateway stage to be named?",
+		false,
+		"prod")
+
+	if common.AskYesNo("Would you like to use the default lambda function?") {
+		cfg.Resources.lambdaHandler = "lambda_function.lambda_handler"
+
+		functionData, err := base64.StdEncoding.DecodeString(LambdaZip)
+		if err != nil {
+			return nil, err
+		}
+
+		cfg.Resources.lambdaFunctionZipBytes = functionData
+	}
 
 	return cfg, nil
 }
@@ -191,14 +213,18 @@ func APIARN(apiID *string, functionARN *string, functionName *string) string {
 }
 
 func (cfg *AWSConfig) ConfigureAwsRoles() error {
-	regionConfig := &aws.Config{Region: &cfg.region}
 
 	a := iam.New(cfg.awsSession)
 
-	_, err := a.CreateRole(&iam.CreateRoleInput{
+	roleInput := &iam.CreateRoleInput{
 		RoleName:                 aws.String(cfg.Resources.lambdaRoleName),
 		AssumeRolePolicyDocument: aws.String(TrustDocument),
-	})
+	}
+	if common.AskYesNo("Do you wish to include a Permission Boundary?") {
+		permissionBoundary := common.PromptString("What is the ARN of the boundary you'd like to attach to this role?", false, "")
+		roleInput.SetPermissionsBoundary(permissionBoundary)
+	}
+	_, err := a.CreateRole(roleInput)
 
 	if err == nil {
 		fmt.Println("Waiting 15s for role to propagate")
@@ -226,12 +252,7 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	})
 
 	cfg.Resources.lambdaRoleARN = *lrole.Role.Arn
-	l := lambda.New(cfg.awsSession, regionConfig)
-
-	functionData, err := base64.StdEncoding.DecodeString(LambdaZip)
-	if err != nil {
-		return err
-	}
+	l := lambda.New(cfg.awsSession, cfg.Resources.regionConfig)
 
 	var functionARN *string
 	lf, err := l.CreateFunction(&lambda.CreateFunctionInput{
@@ -240,7 +261,7 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 		Runtime:      aws.String(cfg.Resources.lambdaRuntime),
 		Handler:      aws.String(cfg.Resources.lambdaHandler),
 		Code: &lambda.FunctionCode{
-			ZipFile: functionData,
+			ZipFile: cfg.Resources.lambdaFunctionZipBytes,
 		},
 	})
 
@@ -263,10 +284,10 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 		functionARN = lf2.Configuration.FunctionArn
 	}
 
-	g := apigateway.New(cfg.awsSession, regionConfig)
+	g := apigateway.New(cfg.awsSession, cfg.Resources.regionConfig)
 
 	gw, err := g.CreateRestApi(&apigateway.CreateRestApiInput{
-		Name: aws.String(cfg.Resources.lambdaFuncName),
+		Name: aws.String(cfg.Resources.gatewayName),
 	})
 
 	if err != nil {
@@ -329,7 +350,7 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 	}
 
 	uriString := fmt.Sprintf("arn:aws:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations",
-		aws.StringValue(regionConfig.Region),
+		cfg.region,
 		aws.StringValue(functionARN))
 
 	params := &apigateway.PutIntegrationInput{
@@ -375,14 +396,21 @@ func (cfg *AWSConfig) ConfigureAwsRoles() error {
 
 func (scfg *AWSConfig) EnsureRole(roleName string, policyDocument string) (arn string) {
 	i := iam.New(scfg.awsSession)
-	r, err := i.CreateRole(&iam.CreateRoleInput{
+	roleInput := &iam.CreateRoleInput{
 		RoleName:                 aws.String(roleName),
 		AssumeRolePolicyDocument: aws.String(policyDocument),
-	})
+	}
+	if common.AskYesNo("Do you wish to include a Permission Boundary?") {
+		permissionBoundary := common.PromptString("What is the ARN of the boundary you'd like to attach to this role?", false, "")
+		roleInput.SetPermissionsBoundary(permissionBoundary)
+	}
+	r, err := i.CreateRole(roleInput)
 
 	// Role successfully created
 	if err == nil {
 		return *r.Role.Arn
+	} else {
+		fmt.Println(err)
 	}
 
 	// Get existing Role
@@ -391,7 +419,7 @@ func (scfg *AWSConfig) EnsureRole(roleName string, policyDocument string) (arn s
 	})
 
 	if err != nil {
-		log.Fatalf("Not able to ensure role %s", roleName)
+		log.Fatalf("Not able to ensure role %s, encountered error: %s", roleName, err)
 		return
 	}
 
@@ -409,24 +437,13 @@ func (scfg *AWSConfig) EnsureRole(roleName string, policyDocument string) (arn s
 }
 
 func (scfg *SnowflakeConfig) AddTrustToAWSRole() error {
-	sess, err := session.NewSession(&aws.Config{
-		Credentials: credentials.NewEnvCredentials(),
-	})
-	g := apigateway.New(sess, &aws.Config{Region: &scfg.region})
+	g := apigateway.New(scfg.awsSession, &aws.Config{Region: &scfg.region})
+	i := iam.New(scfg.awsSession)
 
-	if err != nil {
-		return err
-	}
-
-	i := iam.New(sess)
 	scfg.EnsureRole(scfg.Resources.gatewayRoleName,
 		fmt.Sprintf(ExternalApiRoleTrustDocument,
 			scfg.iamUserARN,
 			scfg.apiExternalID))
-
-	if err != nil {
-		return err
-	}
 
 	pd := fmt.Sprintf(InvokeExternalApiPolicyDocument,
 		scfg.region,
@@ -438,7 +455,7 @@ func (scfg *SnowflakeConfig) AddTrustToAWSRole() error {
 		PolicyName:     aws.String(scfg.Resources.gatewayPolicyName),
 		RoleName:       aws.String(scfg.Resources.gatewayRoleName),
 	}
-	_, err = i.PutRolePolicy(putParams)
+	_, err := i.PutRolePolicy(putParams)
 
 	fmt.Println("Waiting 15s for policy to propagate...")
 
